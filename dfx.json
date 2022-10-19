@@ -4,11 +4,6 @@
       "candid": "src/ndp/ndp.did",
       "package": "ndp",
       "type": "rust"
-    },
-    "nft_staking": {
-      "candid": "src/nft/nft.did",
-      "package": "nft",
-      "type": "rust"
     }
   },
   "defaults": {
