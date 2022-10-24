@@ -1,7 +1,8 @@
 #![allow(unused_variables, unused_imports)]
 use crate::metadata::use_admin;
 use crate::staking::{Staking, StakingID};
-use crate::types::{StakingItem, StakingMonth};
+use crate::sitedata::{SiteDataList, SiteKeyType};
+use crate::types::{StakingItem,SiteItem, StakingMonth};
 use crate::utils::transfer_ndp;
 use candid::{candid_method, error, Principal};
 use ic_cdk::storage;
@@ -12,11 +13,15 @@ use std::collections::HashMap;
 mod dip20;
 mod metadata;
 mod staking;
+mod sitedata;
 mod types;
 mod utils;
 
 thread_local! {
     static NDPSTAKING:RefCell<staking::Staking> = RefCell::default();
+    static SITEDATAMOD:RefCell<sitedata::SiteDataList> = RefCell::default();
+
+
     static METADATA:RefCell<metadata::Metadata> = RefCell::default();
 }
 
@@ -28,6 +33,8 @@ fn init() {
         meta.canister_id = ic_cdk::api::id().to_text();
     });
 }
+
+
 
 #[update]
 #[candid_method(update)]
@@ -53,6 +60,7 @@ async fn staking_list() -> HashMap<StakingID, StakingItem> {
     NDPSTAKING.with(|staking| staking.borrow().staking_data.clone())
 }
 
+
 // #[query(guard = "use_admin")]
 #[query]
 #[candid_method(query)]
@@ -66,10 +74,46 @@ pub fn system_time() -> u64 {
     ic_cdk::api::time()
 }
 
+#[query]
+#[candid_method(query)]
+pub fn system_t_time() -> u64 {
+    ic_cdk::api::time()
+}
+
+
+#[update]
+#[candid_method(update)]
+async fn add_site_data(mut arg: SiteItem) -> Result<(), String> {
+    let caller = ic_cdk::caller();
+    // println!("{:#?}",caller);
+    arg.principal = Some(caller);
+    // 8个0精度单位 也就是这里是100元
+    // let amount_min: u64 = 100_0000_0000;
+    SITEDATAMOD.with(|site_data| site_data.borrow_mut().add_func(arg))
+    // Err(format!("Minimum quantity is {}", amount_min))
+}
+
+
+#[query]
+#[candid_method(query)]
+async fn get_site_list() -> HashMap<SiteKeyType, SiteItem> {
+    // HashMap<SiteKeyType, SiteItem>
+    // Result<SiteDataList, String>
+    
+    
+    // let caller = ic_cdk::caller();
+    // arg.principal = Some(caller);
+    // 8个0精度单位 也就是这里是100元
+    // let amount_min: u64 = 100_0000_0000;
+    SITEDATAMOD.with(|site_data| site_data.borrow().site_data.clone())
+    // Err(format!("Minimum quantity is {}", amount_min))
+}
+
 #[pre_upgrade]
 fn pre_upgrade() {
     storage::stable_save((
         NDPSTAKING.with(|ndp| ndp.borrow().clone()),
+        SITEDATAMOD.with(|sitedata| sitedata.borrow().clone()),
         METADATA.with(|metadata| metadata.borrow().clone()),
     ))
     .unwrap()
@@ -77,10 +121,11 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (old_ndp_staking, old_metadata): (Staking, metadata::Metadata) =
+    let (old_ndp_staking, old_metadata,old_site_data): (Staking, metadata::Metadata,sitedata::SiteDataList) =
         storage::stable_restore().unwrap();
 
     NDPSTAKING.with(|ndp| *ndp.borrow_mut() = old_ndp_staking);
+    SITEDATAMOD.with(|sitedata| *sitedata.borrow_mut() = old_site_data);
     METADATA.with(|data| *data.borrow_mut() = old_metadata);
 }
 

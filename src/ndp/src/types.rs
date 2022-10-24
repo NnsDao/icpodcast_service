@@ -10,6 +10,14 @@ pub struct StakingItem {
     pub token: TokenType,
 }
 
+#[derive(CandidType, Deserialize, Default, Clone)]
+pub struct SiteItem {
+    pub principal: Option<Principal>,
+    pub site_name : String,
+    pub site_start_time: Option<u64>,
+    pub site_url : String,
+}
+
 #[allow(clippy::upper_case_acronyms)]
 #[derive(CandidType, Deserialize, Clone)]
 pub enum TokenType {
