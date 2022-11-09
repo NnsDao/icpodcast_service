@@ -2,7 +2,8 @@
 use crate::metadata::use_admin;
 use crate::staking::{Staking, StakingID};
 use crate::sitedata::{SiteDataList, SiteKeyType};
-use crate::types::{StakingItem,SiteItem, StakingMonth};
+use crate::siteinfo::{SiteInfoDataList, SiteInfoKeyType};
+use crate::types::{StakingItem,SiteItem, SiteInfoItem, StakingMonth};
 use crate::utils::transfer_ndp;
 use candid::{candid_method, error, Principal};
 use ic_cdk::storage;
@@ -14,14 +15,14 @@ mod dip20;
 mod metadata;
 mod staking;
 mod sitedata;
+mod siteinfo;
 mod types;
 mod utils;
 
 thread_local! {
     static NDPSTAKING:RefCell<staking::Staking> = RefCell::default();
     static SITEDATAMOD:RefCell<sitedata::SiteDataList> = RefCell::default();
-
-
+    static SITEINFOMOD:RefCell<siteinfo::SiteInfoDataList> = RefCell::default();
     static METADATA:RefCell<metadata::Metadata> = RefCell::default();
 }
 
@@ -115,18 +116,20 @@ fn pre_upgrade() {
         NDPSTAKING.with(|ndp| ndp.borrow().clone()),
         SITEDATAMOD.with(|sitedata| sitedata.borrow().clone()),
         METADATA.with(|metadata| metadata.borrow().clone()),
+        SITEINFOMOD.with(|siteinfodata| siteinfodata.borrow().clone()),
     ))
     .unwrap()
 }
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (old_ndp_staking, old_metadata,old_site_data): (Staking, metadata::Metadata,sitedata::SiteDataList) =
+    let (old_ndp_staking, old_metadata,old_site_data,old_site_info): (Staking, metadata::Metadata,sitedata::SiteDataList,siteinfo::SiteInfoDataList) =
         storage::stable_restore().unwrap();
 
     NDPSTAKING.with(|ndp| *ndp.borrow_mut() = old_ndp_staking);
     SITEDATAMOD.with(|sitedata| *sitedata.borrow_mut() = old_site_data);
     METADATA.with(|data| *data.borrow_mut() = old_metadata);
+    SITEINFOMOD.with(|siteinfodata| *siteinfodata.borrow_mut() = old_site_info);
 }
 
 // candid interface
