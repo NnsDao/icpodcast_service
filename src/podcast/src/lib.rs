@@ -7,6 +7,7 @@ use ic_kit::ic;
 use serde::{Deserialize, Serialize};
 
 use owner::*;
+use podcast::*;
 
 mod init;
 mod owner;
@@ -14,6 +15,7 @@ mod podcast;
 
 thread_local! {
     static OWNER_DATA_STATE: RefCell<OwnerService>  = RefCell::default();
+    static PODCAST_DATA_SERVICE: RefCell<PodcastService> = RefCell::default();
 }
 
 #[query]
