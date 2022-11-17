@@ -33,7 +33,9 @@ pub struct Info {
 }
 
 impl Podcast {
-    pub fn create(&mut self, iterm: PodcastIterm) {}
+    pub fn create(&mut self, iterm: PodcastIterm) {
+        self.list.insert(self.generate_id, iterm);
+    }
 
     pub fn generate_id(&mut self) -> Id {
         self.id += 1;
