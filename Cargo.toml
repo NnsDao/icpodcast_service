@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "src/ndp",
-    "src/nft",
+    "src/podcast",
+    "src/manager",
 ]
 
 
