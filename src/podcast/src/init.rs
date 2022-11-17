@@ -1,7 +1,7 @@
-use ic_cdk_macros::init;
-use crate::OWNER_DATA_STATE;
 use ic_cdk::export::candid::Principal;
+use ic_cdk_macros::init;
 
+use crate::OWNER_DATA_STATE;
 
 #[init]
 // fn init(admin: Principal) {

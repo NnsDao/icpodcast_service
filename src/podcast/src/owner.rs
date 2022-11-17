@@ -1,16 +1,16 @@
 use ic_cdk::export::candid::CandidType;
 use ic_cdk::export::Principal;
 use serde::{Deserialize, Serialize};
+
 use crate::OWNER_DATA_STATE;
 
 pub fn is_owner() -> Result<(), String> {
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().is_owner(ic_cdk::caller()))
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow().is_owner(ic_cdk::caller()))
 }
 
 pub fn is_admin() -> Result<(), String> {
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().is_admin(ic_cdk::caller()))
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow().is_admin(ic_cdk::caller()))
 }
-
 
 #[derive(CandidType, Clone, Deserialize, Serialize, Default, Debug)]
 pub struct OwnerService {
@@ -19,12 +19,11 @@ pub struct OwnerService {
 }
 
 impl OwnerService {
-
-    pub fn init_admin(&mut self, admin : Principal) -> () {
+    pub fn init_admin(&mut self, admin: Principal) -> () {
         self.admin = Some(admin)
     }
 
-    pub fn change_admin(&mut self, admin : Principal) -> () {
+    pub fn change_admin(&mut self, admin: Principal) -> () {
         self.admin = Some(admin)
     }
 
@@ -42,7 +41,7 @@ impl OwnerService {
     pub fn add_owner(&mut self, principal: Principal) -> () {
         for owner in self.owners.clone() {
             if owner == principal {
-                return ;
+                return;
             }
         }
         self.owners.push(principal)
@@ -63,6 +62,6 @@ impl OwnerService {
     }
 
     pub fn delete_owner(&mut self, person: Principal) -> () {
-        self.owners.retain(|owner|*owner != person);
+        self.owners.retain(|owner| *owner != person);
     }
 }

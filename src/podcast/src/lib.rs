@@ -1,13 +1,16 @@
-mod init;
-mod owner;
+use std::cell::RefCell;
 
 use ic_cdk::api::stable::{StableReader, StableWriter};
-use ic_cdk_macros::*;
-use serde::{Deserialize, Serialize};
-use owner::*;
 use ic_cdk::export::candid::Principal;
+use ic_cdk_macros::*;
 use ic_kit::ic;
-use std::cell::RefCell;
+use serde::{Deserialize, Serialize};
+
+use owner::*;
+
+mod init;
+mod owner;
+mod podcast;
 
 thread_local! {
     static OWNER_DATA_STATE: RefCell<OwnerService>  = RefCell::default();
@@ -15,38 +18,36 @@ thread_local! {
 
 #[query]
 #[candid::candid_method(query)]
-pub fn get_owner() -> Vec<Principal>{
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().get_owners())
+pub fn get_owner() -> Vec<Principal> {
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow().get_owners())
 }
 
 #[query]
 #[candid::candid_method(query)]
-pub fn get_admin() -> Option<Principal>{
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().get_admin())
+pub fn get_admin() -> Option<Principal> {
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow().get_admin())
 }
 
 // #[update(guard="is_owner")]
 #[update]
 #[candid::candid_method(update)]
-pub fn add_owner(person: Principal) ->() {
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow_mut().add_owner(person))
+pub fn add_owner(person: Principal) -> () {
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow_mut().add_owner(person))
 }
 
 // #[update(guard="is_admin")]
 #[update]
 #[candid::candid_method(update)]
-pub fn change_admin(person: Principal) ->() {
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow_mut().change_admin(person))
+pub fn change_admin(person: Principal) -> () {
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow_mut().change_admin(person))
 }
 
 // #[update(guard="is_admin")]
 #[update]
 #[candid::candid_method(update)]
-pub fn delete_owner(person: Principal) ->() {
-    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow_mut().delete_owner(person))
+pub fn delete_owner(person: Principal) -> () {
+    OWNER_DATA_STATE.with(|owner_service| owner_service.borrow_mut().delete_owner(person))
 }
-
-
 
 #[pre_upgrade]
 fn pre_upgrade() {
@@ -56,7 +57,8 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (stable_state,) = ic_cdk::storage::stable_restore().expect("failed to restore stable state");
+    let (stable_state,) =
+        ic_cdk::storage::stable_restore().expect("failed to restore stable state");
     OWNER_DATA_STATE.with(|s| {
         s.replace(stable_state);
     });
