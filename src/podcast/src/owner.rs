@@ -28,6 +28,10 @@ impl OwnerService {
         self.admin = Some(admin)
     }
 
+    pub fn get_admin(&self) -> Option<Principal> {
+        self.admin.clone()
+    }
+
     pub fn is_admin(&self, caller: Principal) -> Result<(), String> {
         if self.admin == Some(caller) {
             return Ok(());
@@ -36,6 +40,11 @@ impl OwnerService {
     }
 
     pub fn add_owner(&mut self, principal: Principal) -> () {
+        for owner in self.owners.clone() {
+            if owner == principal {
+                return ;
+            }
+        }
         self.owners.push(principal)
     }
 

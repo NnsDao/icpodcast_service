@@ -19,6 +19,12 @@ pub fn get_owner() -> Vec<Principal>{
     OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().get_owners())
 }
 
+#[query]
+#[candid::candid_method(query)]
+pub fn get_admin() -> Option<Principal>{
+    OWNER_DATA_STATE.with(|owner_service|owner_service.borrow().get_admin())
+}
+
 // #[update(guard="is_owner")]
 #[update]
 #[candid::candid_method(update)]
