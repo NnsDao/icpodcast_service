@@ -1,6 +1,6 @@
 {
   "canisters": {
-    "ndp_staking": {
+    "manager": {
       "candid": "src/manager/manager.did",
       "package": "manager",
       "type": "rust"

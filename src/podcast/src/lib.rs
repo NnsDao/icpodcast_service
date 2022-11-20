@@ -1,6 +1,11 @@
 use candid::candid_method;
 use std::cell::RefCell;
 
+use ic_cdk::api::call::CallResult;
+use ic_cdk::api::management_canister::main::{
+    canister_status, deposit_cycles, CanisterIdRecord, CanisterSettings, CanisterStatusResponse,
+    CreateCanisterArgument,
+};
 use ic_cdk::api::stable::{StableReader, StableWriter};
 use ic_cdk::export::candid::Principal;
 use ic_cdk_macros::*;
@@ -80,6 +85,21 @@ pub fn create() -> () {
     };
 
     PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow_mut().create_info(info));
+}
+
+/////////////
+//canister//
+////////////
+#[update]
+#[candid::candid_method(update)]
+pub async fn get_canister_status(canister_id: Principal) -> CallResult<(CanisterStatusResponse,)> {
+    canister_status(CanisterIdRecord { canister_id }).await
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub async fn deposit(canister_id: Principal, cycles: u128) -> CallResult<()> {
+    deposit_cycles(CanisterIdRecord { canister_id }, cycles).await
 }
 
 #[pre_upgrade]
