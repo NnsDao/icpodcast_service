@@ -1,5 +1,6 @@
 use candid::candid_method;
 use std::cell::RefCell;
+use std::collections::HashMap;
 
 use ic_cdk::api::call::CallResult;
 use ic_cdk::api::management_canister::main::{
@@ -14,10 +15,12 @@ use serde::{Deserialize, Serialize};
 
 use owner::*;
 use podcast::*;
+use types::*;
 
 mod init;
 mod owner;
 mod podcast;
+mod types;
 
 thread_local! {
     static OWNER_DATA_STATE: RefCell<OwnerService>  = RefCell::default();
@@ -72,19 +75,72 @@ pub fn get_podcast_base_info() -> Info {
 
 #[update]
 #[candid::candid_method(update)]
-pub fn modify_info() -> () {}
-
-#[update]
-#[candid::candid_method(update)]
-pub fn create() -> () {
+pub fn create_base_info(res: SetBaseInfoRes) -> () {
     let info = Info {
-        name: String::from("aaaaa"),
-        describe: String::from("ddddd"),
+        name: res.name,
+        icon: res.icon,
+        describe: res.describe,
+        cover_image: res.cover_image,
         create_at: ic_cdk::api::time(),
         update_at: ic_cdk::api::time(),
     };
 
     PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow_mut().create_info(info));
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub fn update_base_info(res: SetBaseInfoRes) -> () {
+    let old_info =
+        PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow().get_base_info());
+    let info = Info {
+        name: res.name,
+        icon: res.icon,
+        describe: res.describe,
+        cover_image: res.cover_image,
+        create_at: old_info.create_at,
+        update_at: ic_cdk::api::time(),
+    };
+
+    PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow_mut().create_info(info));
+}
+
+#[query]
+#[candid::candid_method(query)]
+pub fn get_podcast_list() -> HashMap<Id, PodcastIterm> {
+    PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow().get_podcast_list())
+}
+
+#[query]
+#[candid::candid_method(query)]
+pub fn get_podcast(id: Id) -> Option<PodcastIterm> {
+    PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow().get_podcast(id))
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub fn create_podcast(podcast: PodcastIterm) -> () {
+    PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow_mut().create_podcast(podcast))
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub fn update_podcast(id: Id, podcast: PodcastIterm) -> Result<(), String> {
+    PODCAST_DATA_STATE
+        .with(|podcast_service| podcast_service.borrow_mut().update_podcast(id, podcast))
+}
+
+#[query]
+#[candid::candid_method(query)]
+pub fn get_social_link() -> SocialLink {
+    PODCAST_DATA_STATE.with(|podcast_service| podcast_service.borrow().get_social_link())
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub fn set_social_link(social_link: SocialLink) -> () {
+    PODCAST_DATA_STATE
+        .with(|podcast_service| podcast_service.borrow_mut().set_social_link(social_link))
 }
 
 /////////////
