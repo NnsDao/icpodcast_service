@@ -13,6 +13,7 @@ use manager::*;
 use owner::*;
 use serde::{Deserialize, Serialize};
 
+mod ic_wallet;
 mod init;
 mod manager;
 mod owner;
