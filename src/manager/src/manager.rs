@@ -49,7 +49,7 @@ impl ManagerService {
             .retain(|&canister| canister != canister_id);
     }
 
-    pub fn record_advance_payment(&mut self, canister: Principal, caller: Principal) -> String {
+    pub fn advance_payment_addr(&mut self, canister: Principal, caller: Principal) -> String {
         let sub = self.get_transaction_sub_account();
         self.advance_payment.insert(caller, sub);
         get_account(canister, sub)
