@@ -13,6 +13,7 @@ use manager::*;
 use owner::*;
 use serde::{Deserialize, Serialize};
 
+mod ic_wallet;
 mod init;
 mod manager;
 mod owner;
@@ -115,6 +116,14 @@ pub async fn create_podcast_canister() -> CallResult<()> {
         arg: vec![],
     })
     .await
+}
+
+#[update]
+#[candid::candid_method(update)]
+fn get_address() -> String {
+    let canister = ic_cdk::id();
+    let caller = ic_cdk::caller();
+    MANAGER_DATA_SERVICE.with(|s| s.borrow_mut().advance_payment_addr(canister, caller))
 }
 
 #[pre_upgrade]
