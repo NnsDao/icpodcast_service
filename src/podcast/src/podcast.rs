@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use ic_cdk::export::candid::CandidType;
 use ic_cdk::export::Principal;
 use serde::{Deserialize, Serialize};
+use tool::*;
 
 pub type Id = u64;
 
@@ -13,17 +14,22 @@ pub struct PodcastService {
     pub list: HashMap<Id, PodcastIterm>,
     pub tag: Vec<String>,
     pub social_link: SocialLink,
+    // todo donate
 }
 
 #[derive(CandidType, Clone, Deserialize, Serialize, Default, Debug)]
 pub struct PodcastIterm {
     pub title: String,
-    pub describe: String,
     pub sub_title: String,
+    pub describe: String,
+    pub show_note: String,
+    pub cover_image: String,
     pub link: String,
-    pub author: Vec<Principal>,
+    pub hosts: Principal,
+    pub guests: Vec<Principal>,
     pub categories: Categories,
     pub language: Language,
+    pub tag: Vec<String>,
     pub status: bool,
     pub create_at: u64,
     pub update_at: u64,
@@ -67,6 +73,7 @@ impl Default for Language {
 
 #[derive(CandidType, Clone, Deserialize, Serialize, Default, Debug)]
 pub struct SocialLink {
+    pub blog: String,
     pub email: String,
     pub telegram: String,
     pub twitter: String,
@@ -92,10 +99,14 @@ impl PodcastService {
                     title: podcast.title,
                     describe: podcast.describe,
                     sub_title: podcast.sub_title,
+                    show_note: podcast.show_note,
+                    cover_image: podcast.cover_image,
                     link: podcast.link,
-                    author: podcast.author,
+                    hosts: podcast.hosts,
+                    guests: podcast.guests,
                     categories: podcast.categories,
                     language: podcast.language,
+                    tag: podcast.tag,
                     status: podcast.status,
                     create_at: item.create_at,
                     update_at: ic_cdk::api::time(),
