@@ -3,12 +3,16 @@
 use candid::candid_method;
 use std::cell::RefCell;
 
-use ic_cdk::api::call::CallResult;
+use ic_cdk::api::call::{CallResult, RejectionCode};
 use ic_cdk::api::management_canister::main::*;
 use ic_cdk::api::stable::{StableReader, StableWriter};
 use ic_cdk::export::candid::Principal;
 use ic_cdk_macros::*;
 use ic_kit::ic;
+use ic_ledger_types::{
+    account_balance, transfer, AccountBalanceArgs, AccountIdentifier, Memo, Subaccount, Tokens,
+    TransferArgs, DEFAULT_FEE, DEFAULT_SUBACCOUNT, MAINNET_LEDGER_CANISTER_ID,
+};
 use manager::*;
 use owner::*;
 use serde::{Deserialize, Serialize};
@@ -22,6 +26,9 @@ thread_local! {
     static OWNER_DATA_STATE: RefCell<OwnerService>  = RefCell::default();
     static MANAGER_DATA_SERVICE: RefCell<ManagerService> = RefCell::default();
 }
+
+pub const PAYMENT_BALANCE: u64 = 50000000;
+const MANGER_CANISTER: &str = "c526v-pnjpe-x57vs-xe3qb-idgh7-xre3a-jdzef-l654c-5sg4x-5iigp-xae";
 
 pub const WASM: &[u8] = include_bytes!("podcast/podcast.wasm");
 
@@ -88,10 +95,59 @@ pub async fn deposit(canister_id: Principal, cycles: u128) -> CallResult<()> {
 #[candid::candid_method(update)]
 pub async fn create_podcast_canister() -> CallResult<()> {
     let caller = ic_cdk::caller();
+    let canister = ic_cdk::id();
+
+    let opt_sub_account = MANAGER_DATA_SERVICE.with(|s| s.borrow().get_sub_account(caller.clone()));
+    if opt_sub_account.is_none() {
+        return Err((
+            RejectionCode::CanisterReject,
+            String::from("Payment was not detected"),
+        ));
+    }
+    let balance = account_balance(
+        MAINNET_LEDGER_CANISTER_ID,
+        AccountBalanceArgs {
+            account: AccountIdentifier::new(&canister.clone(), &opt_sub_account.clone().unwrap()),
+        },
+    )
+    .await;
+
+    match balance {
+        Ok(token) => {
+            if token.e8s() == PAYMENT_BALANCE {
+                MANAGER_DATA_SERVICE.with(|s| s.borrow_mut().del_sub_account(caller.clone()));
+            }
+        }
+        Err(_) => {
+            return Err((
+                RejectionCode::CanisterReject,
+                String::from("Payment was not detected"),
+            ))
+        }
+    }
+
+    transfer(
+        MAINNET_LEDGER_CANISTER_ID,
+        TransferArgs {
+            memo: Memo(0),
+            amount: Tokens::from_e8s(50000000 - 10_000),
+            fee: DEFAULT_FEE,
+            from_subaccount: opt_sub_account,
+            to: AccountIdentifier::new(
+                &Principal::from_text(MANGER_CANISTER).unwrap(),
+                &DEFAULT_SUBACCOUNT,
+            ),
+            created_at_time: None,
+        },
+    )
+    .await
+    .expect("call to ledger failed")
+    .expect("transfer failed");
+
     let canister = create_canister_with_extra_cycles(
         CreateCanisterArgument {
             settings: Some(CanisterSettings {
-                controllers: Some(vec![ic_cdk::id(), caller.clone()]),
+                controllers: Some(vec![canister.clone(), caller.clone()]),
                 compute_allocation: None,
                 /// Must be a number between 0 and 2^48^ (i.e 256TB), inclusively.
                 memory_allocation: None,

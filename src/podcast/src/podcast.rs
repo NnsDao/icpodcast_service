@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use ic_cdk::export::candid::CandidType;
 use ic_cdk::export::Principal;
 use serde::{Deserialize, Serialize};
-use tool::*;
 
 pub type Id = u64;
 
@@ -25,7 +24,7 @@ pub struct PodcastIterm {
     pub show_note: String,
     pub cover_image: String,
     pub link: String,
-    pub hosts: Principal,
+    pub hosts: Option<Principal>,
     pub guests: Vec<Principal>,
     pub categories: Categories,
     pub language: Language,

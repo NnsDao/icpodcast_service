@@ -21,7 +21,6 @@ mod init;
 mod owner;
 mod podcast;
 mod types;
-mod tool;
 
 thread_local! {
     static OWNER_DATA_STATE: RefCell<OwnerService>  = RefCell::default();

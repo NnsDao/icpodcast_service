@@ -1,7 +1,11 @@
 use crate::ic_wallet::*;
+use ic_cdk::api::call::reject;
 use ic_cdk::export::candid::CandidType;
 use ic_cdk::export::Principal;
-use ic_ledger_types::{AccountIdentifier, Subaccount, DEFAULT_SUBACCOUNT};
+use ic_ledger_types::{
+    account_balance, AccountBalanceArgs, AccountIdentifier, Subaccount, DEFAULT_SUBACCOUNT,
+    MAINNET_LEDGER_CANISTER_ID,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -73,5 +77,16 @@ impl ManagerService {
             default_sub_account.0[32 - index - 1] = item.clone()
         }
         default_sub_account
+    }
+
+    pub fn get_sub_account(&self, caller: Principal) -> Option<Subaccount> {
+        match self.advance_payment.get(&caller) {
+            Some(&sub) => return Some(sub.clone()),
+            None => return None,
+        }
+    }
+
+    pub fn del_sub_account(&mut self, caller: Principal) -> () {
+        self.advance_payment.remove(&caller);
     }
 }
