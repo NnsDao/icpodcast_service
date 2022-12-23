@@ -1,13 +1,13 @@
 {
   "canisters": {
-    "ndp_staking": {
-      "candid": "src/ndp/ndp.did",
-      "package": "ndp",
+    "manager": {
+      "candid": "src/manager/manager.did",
+      "package": "manager",
       "type": "rust"
     },
-    "nft_staking": {
-      "candid": "src/nft/nft.did",
-      "package": "nft",
+    "podcast": {
+      "candid": "src/podcast/podcast.did",
+      "package": "podcast",
       "type": "rust"
     }
   },

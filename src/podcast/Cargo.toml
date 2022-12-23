@@ -1,7 +1,8 @@
 [package]
-name = "ndp"
+name = "podcast"
 version = "0.1.0"
 edition = "2021"
+
 
 [lib]
 crate-type = ["cdylib"]
@@ -9,9 +10,9 @@ crate-type = ["cdylib"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ic-cdk-macros = "0.5"
-candid = "0.7.4"
+ic-cdk-macros = "0.6.7"
+candid = "0.8.3"
 serde = "1.0"
-ic-kit = "0.4.4"
-ic-cdk = "0.5.0"
-num-bigint = "0.4.3"
+ic-kit = "0.4.8"
+ic-cdk = "0.6.7"
+serde_cbor = "0.11.2"
