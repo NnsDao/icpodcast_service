@@ -1,12 +1,12 @@
 {
   "canisters": {
     "manager": {
-      "candid": "src/manager/manager.did",
+      "candid": "candid/manager.did",
       "package": "manager",
       "type": "rust"
     },
     "podcast": {
-      "candid": "src/podcast/podcast.did",
+      "candid": "candid/podcast.did",
       "package": "podcast",
       "type": "rust"
     }

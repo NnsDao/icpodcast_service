@@ -1,6 +1,6 @@
 #![allow(unused_variables, unused_imports)]
 
-use candid::candid_method;
+use candid::{candid_method, Error};
 use std::cell::RefCell;
 
 use ic_cdk::api::call::{CallResult, RejectionCode};
@@ -13,6 +13,7 @@ use ic_ledger_types::{
     account_balance, transfer, AccountBalanceArgs, AccountIdentifier, Memo, Subaccount, Tokens,
     TransferArgs, DEFAULT_FEE, DEFAULT_SUBACCOUNT, MAINNET_LEDGER_CANISTER_ID,
 };
+use ic_cdk::api::call::RejectionCode::Unknown;
 use manager::*;
 use owner::*;
 use serde::{Deserialize, Serialize};
@@ -89,6 +90,27 @@ pub async fn get_canister_status(canister_id: Principal) -> CallResult<(Canister
 #[candid::candid_method(update)]
 pub async fn deposit(canister_id: Principal, cycles: u128) -> CallResult<()> {
     deposit_cycles(CanisterIdRecord { canister_id }, cycles).await
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub async fn canister_stop(canister_id: Principal) -> CallResult<()>  {
+    let caller = ic_cdk::caller();
+    if !MANAGER_DATA_SERVICE.with(|s| s.borrow().owner_canister(caller, canister_id.clone())) {
+        return Err((Unknown, String::from("canister is not exist")));
+    }
+    stop_canister(CanisterIdRecord{canister_id}).await
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub async fn canister_start(canister_id: Principal) -> CallResult<()> {
+    let caller = ic_cdk::caller();
+    if !MANAGER_DATA_SERVICE.with(|s| s.borrow().owner_canister(caller, canister_id.clone())) {
+        return Err((Unknown, String::from("canister is not exist")));
+    }
+
+    start_canister(CanisterIdRecord{canister_id}).await
 }
 
 #[update]
@@ -208,4 +230,23 @@ candid::export_service!();
 #[query(name = "__get_candid_interface_tmp_hack")]
 fn export_candid() -> String {
     __export_service()
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn save_candid() {
+        use std::env;
+        use std::fs::write;
+        use std::path::PathBuf;
+
+        let dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+        println!("{:?}", dir);
+        let dir = dir.parent().unwrap().parent().unwrap().join("candid");
+        println!("{:?}", dir);
+        write(dir.join("manager.did"), export_candid()).expect("Write failed.");
+    }
 }

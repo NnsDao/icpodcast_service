@@ -27,6 +27,13 @@ impl ManagerService {
         }
     }
 
+    pub fn owner_canister(&self, caller: Principal, canister: Principal) -> bool {
+        if let Some(list) = self.canister_list.get(&caller) {
+            return list.contains(&canister.clone())
+        }
+        return false
+    }
+
     pub fn get_podcast_canister(&self) -> Vec<Principal> {
         match self.canister_list.get(&ic_cdk::caller()) {
             Some(list) => list.to_vec().clone(),

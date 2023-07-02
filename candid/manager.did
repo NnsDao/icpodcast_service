@@ -1,0 +1,41 @@
+type CanisterStatusResponse = record {
+  status : CanisterStatusType;
+  memory_size : nat;
+  cycles : nat;
+  settings : DefiniteCanisterSettings;
+  idle_cycles_burned_per_day : nat;
+  module_hash : opt vec nat8;
+};
+type CanisterStatusType = variant { stopped; stopping; running };
+type DefiniteCanisterSettings = record {
+  freezing_threshold : nat;
+  controllers : vec principal;
+  memory_allocation : nat;
+  compute_allocation : nat;
+};
+type RejectionCode = variant {
+  NoError;
+  CanisterError;
+  SysTransient;
+  DestinationInvalid;
+  Unknown;
+  SysFatal;
+  CanisterReject;
+};
+type Result = variant { Ok; Err : record { RejectionCode; text } };
+type Result_1 = variant {
+  Ok : record { CanisterStatusResponse };
+  Err : record { RejectionCode; text };
+};
+service : {
+  canister_start : (principal) -> (Result);
+  canister_stop : (principal) -> (Result);
+  create_podcast_canister : () -> (Result);
+  deposit : (principal, nat) -> (Result);
+  get_address : () -> (text);
+  get_canister_status : (principal) -> (Result_1);
+  get_podcast_canister : () -> (vec principal) query;
+  need_upgrade : (principal) -> (bool) query;
+  notify_upgrade : () -> ();
+  upgrade_podcast : (principal) -> (Result);
+}
