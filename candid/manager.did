@@ -37,5 +37,6 @@ service : {
   get_podcast_canister : () -> (vec principal) query;
   need_upgrade : (principal) -> (bool) query;
   notify_upgrade : () -> ();
+  update_canister_set : (principal, opt nat, opt nat, opt nat) -> (Result);
   upgrade_podcast : (principal) -> (Result);
 }

@@ -3,6 +3,7 @@
 use candid::{candid_method, Error};
 use std::cell::RefCell;
 
+use candid::{Encode, Decode, CandidType, Nat};
 use ic_cdk::api::call::{CallResult, RejectionCode};
 use ic_cdk::api::management_canister::main::*;
 use ic_cdk::api::stable::{StableReader, StableWriter};
@@ -111,6 +112,30 @@ pub async fn canister_start(canister_id: Principal) -> CallResult<()> {
     }
 
     start_canister(CanisterIdRecord{canister_id}).await
+}
+
+#[update]
+#[candid::candid_method(update)]
+pub async fn update_canister_set(canister_id: Principal, compute_allocation: Option<Nat>, memory_allocation: Option<Nat>, freezing_threshold: Option<Nat>) -> CallResult<()> {
+    let caller = ic_cdk::caller();
+    let canister = ic_cdk::id();
+
+    if !MANAGER_DATA_SERVICE.with(|s| s.borrow().owner_canister(caller, canister_id.clone())) {
+        return Err((Unknown, String::from("canister is not exist")));
+    }
+    update_settings(UpdateSettingsArgument{
+         /// Principle of the canister.
+            canister_id: canister_id,
+            /// See [CanisterSettings].
+            settings: CanisterSettings{
+                controllers: Some(vec![canister.clone(), caller.clone()]),
+                compute_allocation: compute_allocation,
+                /// Must be a number between 0 and 2^48^ (i.e 256TB), inclusively.
+                memory_allocation: memory_allocation,
+                /// Must be a number between 0 and 2^64^-1, inclusively, and indicates a length of time in seconds.
+                freezing_threshold: freezing_threshold,
+            },
+    }).await
 }
 
 #[update]
