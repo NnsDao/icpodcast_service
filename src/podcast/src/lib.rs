@@ -185,3 +185,22 @@ candid::export_service!();
 fn export_candid() -> String {
     __export_service()
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn save_candid() {
+        use std::env;
+        use std::fs::write;
+        use std::path::PathBuf;
+
+        let dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+        println!("{:?}", dir);
+        let dir = dir.parent().unwrap().parent().unwrap().join("candid");
+        println!("{:?}", dir);
+        write(dir.join("podcast.did"), export_candid()).expect("Write failed.");
+    }
+}

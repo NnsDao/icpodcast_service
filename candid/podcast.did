@@ -1,0 +1,92 @@
+type CanisterStatusResponse = record {
+  status : CanisterStatusType;
+  memory_size : nat;
+  cycles : nat;
+  settings : DefiniteCanisterSettings;
+  idle_cycles_burned_per_day : nat;
+  module_hash : opt vec nat8;
+};
+type CanisterStatusType = variant { stopped; stopping; running };
+type Categories = variant { Default };
+type DefiniteCanisterSettings = record {
+  freezing_threshold : nat;
+  controllers : vec principal;
+  memory_allocation : nat;
+  compute_allocation : nat;
+};
+type Info = record {
+  describe : text;
+  cover_image : text;
+  icon : text;
+  name : text;
+  create_at : nat64;
+  update_at : nat64;
+};
+type Language = variant { Korean; Japanese; Chinese; English; Arabic };
+type PodcastIterm = record {
+  tag : vec text;
+  categories : Categories;
+  status : bool;
+  describe : text;
+  title : text;
+  hosts : opt principal;
+  cover_image : text;
+  link : text;
+  create_at : nat64;
+  language : Language;
+  update_at : nat64;
+  show_note : text;
+  guests : vec principal;
+  sub_title : text;
+};
+type RejectionCode = variant {
+  NoError;
+  CanisterError;
+  SysTransient;
+  DestinationInvalid;
+  Unknown;
+  SysFatal;
+  CanisterReject;
+};
+type Result = variant { Ok; Err : record { RejectionCode; text } };
+type Result_1 = variant {
+  Ok : record { CanisterStatusResponse };
+  Err : record { RejectionCode; text };
+};
+type Result_2 = variant { Ok; Err : text };
+type SetBaseInfoRes = record {
+  describe : text;
+  cover_image : text;
+  icon : text;
+  name : text;
+};
+type SocialLink = record {
+  twitter : text;
+  blog : text;
+  instagram : text;
+  email : text;
+  distrikt : text;
+  dmail : text;
+  dscvr : text;
+  telegram : text;
+  github : text;
+  openchat : text;
+};
+service : {
+  add_owner : (principal) -> ();
+  change_admin : (principal) -> ();
+  create_base_info : (SetBaseInfoRes) -> ();
+  create_podcast : (PodcastIterm) -> ();
+  delete_owner : (principal) -> ();
+  deposit : (principal, nat) -> (Result);
+  get_admin : () -> (opt principal) query;
+  get_canister_status : (principal) -> (Result_1);
+  get_owner : () -> (vec principal) query;
+  get_podcast : (nat64) -> (opt PodcastIterm) query;
+  get_podcast_base_info : () -> (Info) query;
+  get_podcast_list : () -> (vec record { nat64; PodcastIterm }) query;
+  get_social_link : () -> (SocialLink) query;
+  set_social_link : (SocialLink) -> ();
+  update_base_info : (SetBaseInfoRes) -> ();
+  update_podcast : (nat64, PodcastIterm) -> (Result_2);
+}
