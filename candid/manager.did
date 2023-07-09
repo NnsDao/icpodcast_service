@@ -35,6 +35,7 @@ service : {
   get_address : () -> (text);
   get_canister_status : (principal) -> (Result_1);
   get_podcast_canister : () -> (vec principal) query;
+  init_podcast : (principal) -> (Result);
   need_upgrade : (principal) -> (bool) query;
   notify_upgrade : () -> ();
   update_canister_set : (principal, opt nat, opt nat, opt nat) -> (Result);

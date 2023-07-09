@@ -77,6 +77,22 @@ pub async fn upgrade_podcast(canister_id: Principal) -> CallResult<()> {
     Ok(())
 }
 
+#[update]
+#[candid::candid_method(update)]
+pub async fn init_podcast(canister_id: Principal) -> CallResult<()> {
+    stop_canister(CanisterIdRecord { canister_id }).await?;
+    install_code(InstallCodeArgument {
+        mode: CanisterInstallMode::Install,
+        canister_id,
+        wasm_module: WASM.to_owned(),
+        arg: vec![],
+    })
+    .await?;
+    start_canister(CanisterIdRecord { canister_id }).await?;
+    MANAGER_DATA_SERVICE.with(|s| s.borrow_mut().upgrade_canister(canister_id));
+    Ok(())
+}
+
 ////////////
 //canister//
 ///////////
